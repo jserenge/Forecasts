@@ -38,8 +38,8 @@ def run_sarimax_model(df, date_column):
 
                 try:
                     temp_model = SARIMAX(series,
-                                         order = param,
-                                         seasonal_order = param_seasonal,
+                                         order=param,
+                                         seasonal_order=param_seasonal,
                                          enforce_stationarity=False,
                                          enforce_invertibility=False)
                     results = temp_model.fit()
@@ -70,6 +70,10 @@ def run_sarimax_model(df, date_column):
 
     return forecast_df
 
+def calculate_weighted_index(df, weights):
+    weighted_index = (df * weights).sum(axis=1) / weights.sum()
+    return weighted_index
+
 st.title('Forecasting App')
 
 uploaded_file = st.file_uploader("Upload your input CSV file", type="csv")
@@ -85,3 +89,14 @@ if uploaded_file is not None:
             forecast_df = run_sarimax_model(input_df, date_column)
 
         st.write(forecast_df)
+
+        # Prompt the user to input weights for each variable
+        weights = []
+        for column in forecast_df.columns:
+            weight = st.number_input(f"Enter weight for {column}", value=1.0)
+            weights.append(weight)
+
+        # Calculate and display the weighted average index
+        weighted_index = calculate_weighted_index(forecast_df, np.array(weights))
+        st.write("Weighted Average Index")
+        st.write(weighted_index)
