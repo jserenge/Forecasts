@@ -27,23 +27,7 @@ uploaded_file = st.file_uploader("Upload your input CSV file", type="csv")
 
 if uploaded_file is not None:
     try:
-        # Read the file content
-        content = uploaded_file.getvalue().decode('utf-8')
-        
-        # Split the content into lines
-        lines = content.strip().split('\n')
-        
-        # Extract headers and data
-        headers = lines[0].split(',')
-        data = [line.split(',') for line in lines[1:]]
-        
-        # Create DataFrame
-        df = pd.DataFrame(data, columns=headers)
-        
-        # Convert columns to appropriate types
-        df['Year'] = df['Year'].astype(int)
-        numeric_columns = df.columns[1:]  # All columns except 'Year'
-        df[numeric_columns] = df[numeric_columns].astype(float)
+        df = pd.read_csv(uploaded_file)
         
         st.write(df)
         
