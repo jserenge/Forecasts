@@ -2,11 +2,4 @@ streamlit
 pandas
 numpy
 statsmodels
-scikit-learn
-matplotlib
-seaborn
-flask
-gunicorn
 plotly
-openpyxl
-xlrd
