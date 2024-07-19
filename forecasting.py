@@ -28,29 +28,35 @@ uploaded_file = st.file_uploader("Upload your input CSV file", type="csv")
 if uploaded_file is not None:
     try:
         df = pd.read_csv(uploaded_file)
-        
+        st.write("Uploaded DataFrame:")
         st.write(df)
         
         cost_columns = st.multiselect('Select the cost components', df.columns[1:].tolist())
         
         if cost_columns:
             data = df[cost_columns].values
+            st.write("Selected Data:")
+            st.write(data)
             
             weights = calculate_weights(data)
+            st.write("Calculated Weights:")
+            st.write(weights)
+            
             multipliers = calculate_weighted_sums(data, weights)
+            st.write("Calculated Multipliers:")
+            st.write(multipliers)
             
             forecast_periods = st.slider('Select number of periods to forecast', 1, 20, 10)
             forecast = forecast_multipliers(multipliers, forecast_periods)
+            st.write("Forecasted Multipliers:")
+            st.write(forecast)
             
             years = df['Year'].values
             future_years = np.arange(years[-1] + 1, years[-1] + 1 + len(forecast))
             all_years = np.concatenate([years, future_years])
             all_multipliers = np.concatenate([multipliers, forecast])
             
-            st.write("Weights:")
-            st.write(pd.DataFrame({'Component': cost_columns, 'Weight': weights}))
-            
-            st.write("Multipliers and Forecast:")
+            st.write("All Years and Multipliers:")
             result_df = pd.DataFrame({'Year': all_years, 'Multiplier': all_multipliers})
             st.write(result_df)
             
