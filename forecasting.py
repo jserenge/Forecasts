@@ -15,7 +15,13 @@ def calculate_weights(data):
 
 def calculate_weighted_sums(data, weights):
     normalized_data = normalize_data(data)
+    st.write("Normalized Data:")
+    st.write(normalized_data)
+    
     weighted_sums = np.dot(normalized_data, weights)
+    st.write("Weighted Sums:")
+    st.write(weighted_sums)
+    
     multipliers = weighted_sums / weighted_sums[0]
     return multipliers
 
