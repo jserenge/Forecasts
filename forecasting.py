@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import plotly.graph_objects as go
-from io import BytesIO
 
 def calculate_weights(data):
     variances = np.var(data, axis=0)
@@ -60,12 +59,10 @@ if uploaded_file is not None:
             fig.update_layout(title='Cost Multipliers Over Time', xaxis_title='Year', yaxis_title='Multiplier')
             st.plotly_chart(fig)
             
-            output = BytesIO()
-            result_df.to_csv(output, index=False)
-            output.seek(0)
+            csv = result_df.to_csv(index=False)
             st.download_button(
                 label="Download forecast as CSV",
-                data=output,
+                data=csv,
                 file_name="forecast.csv",
                 mime="text/csv"
             )
