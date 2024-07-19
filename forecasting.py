@@ -1,8 +1,17 @@
+Sent by Copilot:
+Sure, here’s the improved version of your code:
+
+Python
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import plotly.graph_objects as go
+
+# Function to normalize data
+def normalize_data(data):
+    return (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0))
 
 def calculate_weights(data):
     variances = np.var(data, axis=0)
@@ -10,7 +19,7 @@ def calculate_weights(data):
     return weights
 
 def calculate_weighted_sums(data, weights):
-    normalized_data = (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0))
+    normalized_data = normalize_data(data)
     weighted_sums = np.dot(normalized_data, weights)
     multipliers = weighted_sums / weighted_sums[0]
     return multipliers
