@@ -1,75 +1,80 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-import itertools
-import warnings
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+import plotly.graph_objects as go
+from io import BytesIO
 
-def run_sarimax_model(series):
-    p = d = q = range(0, 2)
-    pdq = list(itertools.product(p, d, q))
-    seasonal_pdq = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
-    warnings.filterwarnings("ignore")
+def calculate_weights(data):
+    variances = np.var(data, axis=0)
+    weights = variances / np.sum(variances)
+    return weights
 
-    best_aic = np.inf
-    best_pdq = None
-    best_seasonal_pdq = None
+def calculate_weighted_sums(data, weights):
+    normalized_data = (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0))
+    weighted_sums = np.dot(normalized_data, weights)
+    multipliers = weighted_sums / weighted_sums[0]
+    return multipliers
 
-    for param in pdq:
-        for param_seasonal in seasonal_pdq:
-            try:
-                temp_model = SARIMAX(series,
-                                     order=param,
-                                     seasonal_order=param_seasonal,
-                                     enforce_stationarity=False,
-                                     enforce_invertibility=False)
-                results = temp_model.fit()
-                if results.aic < best_aic:
-                    best_aic = results.aic
-                    best_pdq = param
-                    best_seasonal_pdq = param_seasonal
-            except:
-                continue
+def forecast_multipliers(multipliers, periods=10):
+    model = ExponentialSmoothing(multipliers, trend='add', seasonal=None)
+    fit = model.fit()
+    forecast = fit.forecast(periods)
+    return forecast
 
-    model = SARIMAX(series, 
-                    order=best_pdq,
-                    seasonal_order=best_seasonal_pdq)
-    results = model.fit()
-    forecast = results.get_forecast(steps=12)
-    forecast_ci = forecast.conf_int()
-    return forecast.predicted_mean, forecast_ci
-
-st.title('Forecasting and Index Creation App')
+st.title('Cost Forecasting App')
 
 uploaded_file = st.file_uploader("Upload your input CSV file", type="csv")
 
 if uploaded_file is not None:
-    input_df = pd.read_csv(uploaded_file)
-    st.write(input_df)
+    try:
+        df = pd.read_csv(uploaded_file)
+        st.write(df)
+        
+        cost_columns = st.multiselect('Select the cost components', df.columns.tolist())
+        
+        if cost_columns:
+            data = df[cost_columns].values
+            
+            weights = calculate_weights(data)
+            multipliers = calculate_weighted_sums(data, weights)
+            
+            forecast_periods = st.slider('Select number of periods to forecast', 1, 20, 10)
+            forecast = forecast_multipliers(multipliers, forecast_periods)
+            
+            years = df['Year'].values
+            future_years = np.arange(years[-1] + 1, years[-1] + 1 + len(forecast))
+            all_years = np.concatenate([years, future_years])
+            all_multipliers = np.concatenate([multipliers, forecast])
+            
+            st.write("Weights:")
+            st.write(pd.DataFrame({'Component': cost_columns, 'Weight': weights}))
+            
+            st.write("Multipliers and Forecast:")
+            result_df = pd.DataFrame({'Year': all_years, 'Multiplier': all_multipliers})
+            st.write(result_df)
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=years, y=multipliers, mode='lines+markers', name='Historical'))
+            fig.add_trace(go.Scatter(x=future_years, y=forecast, mode='lines+markers', name='Forecast'))
+            fig.update_layout(title='Cost Multipliers Over Time', xaxis_title='Year', yaxis_title='Multiplier')
+            st.plotly_chart(fig)
+            
+            output = BytesIO()
+            result_df.to_csv(output, index=False)
+            output.seek(0)
+            st.download_button(
+                label="Download forecast as CSV",
+                data=output,
+                file_name="forecast.csv",
+                mime="text/csv"
+            )
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
+else:
+    st.info("Please upload a CSV file to begin.")
 
-    target_variable = st.selectbox('Select the target variable', input_df.columns.tolist())
-
-    if st.button('Run Index-Based Forecast'):
-        with st.spinner('Creating Index and Forecasting...'):
-            # Define the predictors (excluding the target variable)
-            predictors = input_df.drop(columns=[target_variable])
-            # Run a linear regression model
-            reg_model = LinearRegression()
-            reg_model.fit(predictors, input_df[target_variable])
-            coefficients = reg_model.coef_
-
-            # Create the index (weighted average based on coefficients)
-            index = np.dot(predictors, coefficients)
-
-            # Forecast the index using SARIMAX
-            forecasted_index, forecast_ci = run_sarimax_model(index)
-
-            st.write("Forecasted Index:")
-            st.write(forecasted_index)
-
-    if st.button('Run Direct Forecast'):
-        with st.spinner('Running SARIMAX model...'):
-            forecasted_target, forecast_ci = run_sarimax_model(input_df[target_variable])
-            st.write("Forecasted Target Variable:")
-            st.write(forecasted_target)
+st.sidebar.header("About")
+st.sidebar.info("This app calculates cost multipliers based on historical data and forecasts future values.")
+st.sidebar.header("Instructions")
+st.sidebar.info("1. Upload a CSV file with your cost data.\n2. Select the relevant cost columns.\n3. Adjust the forecast period if needed.\n4. View the results and download if desired.")
