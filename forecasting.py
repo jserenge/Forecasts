@@ -1,8 +1,3 @@
-Sent by Copilot:
-Sure, here’s the improved version of your code:
-
-Python
-
 import streamlit as st
 import pandas as pd
 import numpy as np
