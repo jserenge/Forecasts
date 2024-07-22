@@ -4,7 +4,6 @@ import numpy as np
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import plotly.graph_objects as go
 from io import BytesIO
-import openpyxl
 
 # Function to normalize data
 def normalize_data(data):
@@ -41,7 +40,7 @@ def to_excel(df):
     output = BytesIO()
     writer = pd.ExcelWriter(output, engine='openpyxl')
     df.to_excel(writer, index=False, sheet_name='Sheet1')
-    writer.save()
+    writer._save()
     processed_data = output.getvalue()
     return processed_data
 
