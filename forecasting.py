@@ -7,25 +7,36 @@ from io import BytesIO
 
 # Function to normalize data
 def normalize_data(data):
-    return (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0))
+    normalized = (data - np.min(data, axis=0)) / (np.max(data, axis=0) - np.min(data, axis=0))
+    st.write("Normalized Data (Debugging):")
+    st.write(normalized)
+    return normalized
 
 # Function to calculate weights
 def calculate_weights(data):
     variances = np.var(data, axis=0)
+    st.write("Variances (Debugging):")
+    st.write(variances)
+    
     weights = variances / np.sum(variances)
+    st.write("Weights (Debugging):")
+    st.write(weights)
     return weights
 
 # Function to calculate weighted sums
 def calculate_weighted_sums(data, weights):
     normalized_data = normalize_data(data)
-    st.write("Normalized Data:")
+    weighted_sums = np.dot(normalized_data, weights)
+    
+    st.write("Normalized Data (Debugging):")
     st.write(normalized_data)
     
-    weighted_sums = np.dot(normalized_data, weights)
-    st.write("Weighted Sums:")
+    st.write("Weighted Sums (Debugging):")
     st.write(weighted_sums)
     
     multipliers = weighted_sums / weighted_sums[0]
+    st.write("Multipliers (Debugging):")
+    st.write(multipliers)
     return multipliers
 
 # Function to forecast multipliers
