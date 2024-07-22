@@ -67,6 +67,9 @@ if uploaded_file is not None:
         st.write("Uploaded DataFrame:")
         st.write(df)
         
+        # Ensure the year column is correctly set
+        df.rename(columns={df.columns[0]: 'Year'}, inplace=True)
+        
         cost_columns = st.multiselect('Select the cost components', df.columns[1:].tolist())
         
         if cost_columns:
