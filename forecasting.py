@@ -33,11 +33,11 @@ def forecast_multipliers(multipliers, periods=10):
 
 st.title('Cost Forecasting App')
 
-uploaded_file = st.file_uploader("Upload your input CSV file", type="csv")
+uploaded_file = st.file_uploader("Upload your input CSV file", type="xlsx")
 
 if uploaded_file is not None:
     try:
-        df = pd.read_csv(uploaded_file)
+        df = pd.read_excel(uploaded_file)
         st.write("Uploaded DataFrame:")
         st.write(df)
         
@@ -76,17 +76,17 @@ if uploaded_file is not None:
             fig.update_layout(title='Cost Multipliers Over Time', xaxis_title='Year', yaxis_title='Multiplier')
             st.plotly_chart(fig)
             
-            csv = result_df.to_csv(index=False)
+            csv = result_df.to_xlsx(index=False)
             st.download_button(
-                label="Download forecast as CSV",
-                data=csv,
-                file_name="forecast.csv",
+                label="Download forecast as Excel",
+                data=xlsx,
+                file_name="forecast.xlsx",
                 mime="text/csv"
             )
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
 else:
-    st.info("Please upload a CSV file to begin.")
+    st.info("Please upload an excel file to begin.")
 
 st.sidebar.header("About")
 st.sidebar.info("This app calculates cost multipliers based on historical data and forecasts future values.")
