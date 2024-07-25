@@ -41,12 +41,14 @@ def calculate_weighted_sums(data, weights):
     
     weighted_sums = np.dot(normalized_data, weights)
     st.write("Weighted sums shape:", weighted_sums.shape)
+    st.write("Weighted sums (first 5 values):")
+    st.write(weighted_sums[:5])
     
-    if len(weighted_sums) > 0:
-        if weighted_sums[0] == 0:
-            st.error("Weighted sums calculation error: Initial value is zero.")
+    if len(weighted_sums) > 1:
+        if weighted_sums[1] == 0:
+            st.error("Weighted sums calculation error: Initial value after skipping the first row is zero.")
             return None
-        multipliers = weighted_sums / weighted_sums[0]
+        multipliers = weighted_sums[1:] / weighted_sums[1]
     else:
         st.error("Weighted sums array is empty")
         return None
@@ -97,15 +99,15 @@ if uploaded_file is not None:
         cost_columns = st.multiselect('Select the cost components', df.columns[1:].tolist())
         
         if cost_columns:
-            data = df[cost_columns].values[1:]  # Skip the first row
+            data = df[cost_columns].values  # Do not skip the first row yet
             st.write("Selected Data (first 5 rows):")
             st.write(data[:5])
             
-            weights = calculate_weights(data)
+            weights = calculate_weights(data[1:])  # Skip the first row for weight calculation
             if weights is None:
                 st.stop()
             
-            multipliers = calculate_weighted_sums(data, weights)
+            multipliers = calculate_weighted_sums(data[1:], weights)  # Skip the first row for weighted sums calculation
             if multipliers is not None:
                 st.write("Calculated Multipliers (first 5 values):")
                 st.write(multipliers[:5])
