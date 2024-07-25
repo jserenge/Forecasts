@@ -129,6 +129,10 @@ if uploaded_file is not None:
             all_years = np.concatenate([years, future_years])
             all_multipliers = np.concatenate([multipliers, forecast])
             
+            if len(all_years) != len(all_multipliers):
+                st.error("All arrays must be of the same length")
+                st.stop()
+            
             st.write("All Years and Multipliers (first 5 rows):")
             result_df = pd.DataFrame({'Year': all_years, 'Multiplier': all_multipliers})
             st.write(result_df.head())
