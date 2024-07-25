@@ -8,6 +8,9 @@ from io import BytesIO
 def normalize_data(data):
     min_vals = np.min(data, axis=0)
     max_vals = np.max(data, axis=0)
+    if np.any(max_vals - min_vals == 0):
+        st.error("Normalization error: Some columns have zero variance.")
+        return None
     normalized = (data - min_vals) / (max_vals - min_vals)
     st.write("Normalized Data (first 5 rows):")
     st.write(normalized[:5])
@@ -15,6 +18,9 @@ def normalize_data(data):
 
 def calculate_weights(data):
     variances = np.var(data, axis=0)
+    if np.any(variances == 0):
+        st.error("Weight calculation error: Some columns have zero variance.")
+        return None
     st.write("Variances:")
     st.write(variances)
     
@@ -28,12 +34,18 @@ def calculate_weighted_sums(data, weights):
     st.write("Weights shape:", weights.shape)
     
     normalized_data = normalize_data(data)
+    if normalized_data is None:
+        return None
+    
     st.write("Normalized data shape:", normalized_data.shape)
     
     weighted_sums = np.dot(normalized_data, weights)
     st.write("Weighted sums shape:", weighted_sums.shape)
     
     if len(weighted_sums) > 0:
+        if weighted_sums[0] == 0:
+            st.error("Weighted sums calculation error: Initial value is zero.")
+            return None
         multipliers = weighted_sums / weighted_sums[0]
     else:
         st.error("Weighted sums array is empty")
@@ -90,6 +102,8 @@ if uploaded_file is not None:
             st.write(data[:5])
             
             weights = calculate_weights(data)
+            if weights is None:
+                st.stop()
             
             multipliers = calculate_weighted_sums(data, weights)
             if multipliers is not None:
