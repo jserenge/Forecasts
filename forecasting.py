@@ -97,7 +97,7 @@ if uploaded_file is not None:
         cost_columns = st.multiselect('Select the cost components', df.columns[1:].tolist())
         
         if cost_columns:
-            data = df[cost_columns].values
+            data = df[cost_columns].values[1:]  # Skip the first row
             st.write("Selected Data (first 5 rows):")
             st.write(data[:5])
             
@@ -122,7 +122,7 @@ if uploaded_file is not None:
                 st.error("Failed to forecast multipliers")
                 st.stop()
             
-            years = df['Year'].values
+            years = df['Year'].values[1:]  # Skip the first year
             future_years = np.arange(years[-1] + 1, years[-1] + 1 + len(forecast))
             all_years = np.concatenate([years, future_years])
             all_multipliers = np.concatenate([multipliers, forecast])
