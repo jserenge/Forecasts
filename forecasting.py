@@ -70,7 +70,7 @@ def forecast_multipliers(multipliers, periods=10):
     fit = model.fit()
     forecast = fit.forecast(periods)
     
-    st.write("Forecast result (first 5 values):", forecast[:5])
+    st.write("Forecast result (first 10 values):", forecast[:10])
     return forecast
 
 def to_excel(df):
