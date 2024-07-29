@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
-import plotly.graph_objects as go
 from io import BytesIO
 
 def normalize_data(data):
@@ -115,7 +114,7 @@ if uploaded_file is not None:
                 st.error("Failed to calculate multipliers")
                 st.stop()
             
-            forecast_periods = st.slider('Select number of periods to forecast', 1, 20, 10)
+            forecast_periods = st.slider('Select number of periods to forecast', 10, 20, 10)
             forecast = forecast_multipliers(multipliers, forecast_periods)
             if forecast is not None:
                 st.write("Forecasted Multipliers (first 5 values):")
@@ -136,12 +135,6 @@ if uploaded_file is not None:
             st.write("All Years and Multipliers (first 5 rows):")
             result_df = pd.DataFrame({'Year': all_years, 'Multiplier': all_multipliers})
             st.write(result_df.head())
-            
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(x=years, y=multipliers, mode='lines+markers', name='Historical'))
-            fig.add_trace(go.Scatter(x=future_years, y=forecast, mode='lines+markers', name='Forecast'))
-            fig.update_layout(title='Cost Multipliers Over Time', xaxis_title='Year', yaxis_title='Multiplier')
-            st.plotly_chart(fig)
             
             excel_data = to_excel(result_df)
             
