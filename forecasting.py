@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from sklearn.decomposition import PCA
 from io import BytesIO
 
 def load_and_process_data(uploaded_file):
@@ -13,10 +14,10 @@ def load_and_process_data(uploaded_file):
         st.error(f"Error loading data: {str(e)}")
         return None
 
-def calculate_weights(data):
-    weights = np.linalg.norm(data, axis=0)
-    weights /= np.sum(weights)
-    return weights
+def apply_pca(data):
+    pca = PCA(n_components=1)
+    principal_components = pca.fit_transform(data)
+    return principal_components.flatten()
 
 def forecast_multipliers(multipliers, periods):
     model = ExponentialSmoothing(multipliers, trend='add', seasonal=None)
@@ -57,8 +58,7 @@ def main():
             cost_columns = st.multiselect('Select the cost components', df.columns[1:].tolist())
             if cost_columns:
                 data = df[cost_columns].values
-                weights = calculate_weights(data)
-                multipliers = np.dot(data, weights)
+                multipliers = apply_pca(data)
                 forecast_periods = 10
                 forecast = forecast_multipliers(multipliers, forecast_periods)
 
