@@ -99,8 +99,8 @@ if uploaded_file is not None:
         
         if cost_columns:
             data = df[cost_columns].values  # Do not skip the first row yet
-            st.write("Selected Data (first 5 rows):")
-            st.write(data[:5])
+            st.write("Selected Data (first 10 rows):")
+            st.write(data[:10])
             
             weights = calculate_weights(data[1:])  # Skip the first row for weight calculation
             if weights is None:
@@ -108,8 +108,8 @@ if uploaded_file is not None:
             
             multipliers = calculate_weighted_sums(data[1:], weights)  # Skip the first row for weighted sums calculation
             if multipliers is not None:
-                st.write("Calculated Multipliers (first 5 values):")
-                st.write(multipliers[:5])
+                st.write("Calculated Multipliers (first 10 values):")
+                st.write(multipliers[:10])
             else:
                 st.error("Failed to calculate multipliers")
                 st.stop()
@@ -134,7 +134,7 @@ if uploaded_file is not None:
                 st.stop()
             
             result_df = pd.DataFrame({'Year': all_years, 'Multiplier': all_multipliers})
-            st.write("Final DataFrame (first 5 rows):")
+            st.write("Final DataFrame (first 10 rows):")
             st.write(result_df.head())
             
             excel_data = to_excel(result_df)
