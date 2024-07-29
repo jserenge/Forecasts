@@ -70,7 +70,7 @@ def forecast_multipliers(multipliers, periods=10):
     fit = model.fit()
     forecast = fit.forecast(periods)
     
-    st.write("Forecast result (first 10 values):", forecast[:10])
+    st.write("Forecast result (first 5 values):", forecast[:5])
     return forecast
 
 def to_excel(df):
@@ -125,6 +125,12 @@ if uploaded_file is not None:
             
             years = df['Year'].values[1:]  # Skip the first year
             future_years = np.arange(years[-1] + 1, years[-1] + 1 + len(forecast))
+            
+            st.write("Years length:", len(years))
+            st.write("Multipliers length:", len(multipliers))
+            st.write("Future years length:", len(future_years))
+            st.write("Forecast length:", len(forecast))
+            
             all_years = np.concatenate([years, future_years])
             all_multipliers = np.concatenate([multipliers, forecast])
             
