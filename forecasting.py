@@ -114,7 +114,7 @@ if uploaded_file is not None:
                 st.error("Failed to calculate multipliers")
                 st.stop()
             
-            forecast_periods = st.slider('Select number of periods to forecast', 10, 20, 10)
+            forecast_periods = 10
             forecast = forecast_multipliers(multipliers, forecast_periods)
             if forecast is not None:
                 st.write("Forecasted Multipliers (first 5 values):")
@@ -126,11 +126,6 @@ if uploaded_file is not None:
             years = df['Year'].values[1:]  # Skip the first year
             future_years = np.arange(years[-1] + 1, years[-1] + 1 + len(forecast))
             
-            st.write("Years length:", len(years))
-            st.write("Multipliers length:", len(multipliers))
-            st.write("Future years length:", len(future_years))
-            st.write("Forecast length:", len(forecast))
-            
             all_years = np.concatenate([years, future_years])
             all_multipliers = np.concatenate([multipliers, forecast])
             
@@ -138,8 +133,8 @@ if uploaded_file is not None:
                 st.error("All arrays must be of the same length")
                 st.stop()
             
-            st.write("All Years and Multipliers (first 5 rows):")
             result_df = pd.DataFrame({'Year': all_years, 'Multiplier': all_multipliers})
+            st.write("Final DataFrame (first 5 rows):")
             st.write(result_df.head())
             
             excel_data = to_excel(result_df)
@@ -163,4 +158,4 @@ else:
 st.sidebar.header("About")
 st.sidebar.info("This app calculates cost multipliers based on historical data and forecasts future values.")
 st.sidebar.header("Instructions")
-st.sidebar.info("1. Upload an Excel file with your cost data.\n2. Select the relevant cost columns.\n3. Adjust the forecast period if needed.\n4. View the results and download if desired.")
+st.sidebar.info("1. Upload an Excel file with your cost data.\n2. Select the relevant cost columns.\n3. View the results and download if desired.")
