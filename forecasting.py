@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.decomposition import PCA
 from io import BytesIO
 
@@ -19,10 +19,17 @@ def apply_pca(data):
     principal_components = pca.fit_transform(data)
     return principal_components.flatten()
 
+def create_lag_features(data, lags=3):
+    lagged_data = pd.DataFrame(data)
+    for lag in range(1, lags + 1):
+        lagged_data[f'lag_{lag}'] = lagged_data[0].shift(lag)
+    lagged_data.dropna(inplace=True)
+    return lagged_data.values
+
 def forecast_multipliers(multipliers, periods):
-    model = ExponentialSmoothing(multipliers, trend='add', seasonal=None)
-    fit = model.fit()
-    forecast = fit.forecast(periods)
+    model = SARIMAX(multipliers, order=(1, 1, 1), seasonal_order=(1, 1, 1, 12))
+    fit = model.fit(disp=False)
+    forecast = fit.forecast(steps=periods)
     return forecast
 
 def create_result_df(years, multipliers, forecast):
@@ -42,7 +49,7 @@ def main():
     st.title('Cost Forecasting App')
 
     st.sidebar.header("About")
-    st.sidebar.info("This app calculates cost multipliers based on historical data and forecasts future values.")
+    st.sidebar.info("This app calculates cost multipliers based on historical data and forecasts future values using PCA and SARIMAX models. It allows you to upload your cost data, select relevant cost components, and download the forecasted results.")
 
     st.sidebar.header("Instructions")
     st.sidebar.info("1. Upload an Excel file with your cost data.\n2. Select the relevant cost columns.\n3. View the results and download if desired.")
@@ -59,8 +66,9 @@ def main():
             if cost_columns:
                 data = df[cost_columns].values
                 multipliers = apply_pca(data)
+                lagged_data = create_lag_features(multipliers)
                 forecast_periods = 10
-                forecast = forecast_multipliers(multipliers, forecast_periods)
+                forecast = forecast_multipliers(lagged_data[:, 0], forecast_periods)
 
                 years = df['Year'].values
                 result_df = create_result_df(years, multipliers, forecast)
